@@ -1,48 +1,37 @@
-#!/usr/bin/env bash
-#is a challenge
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+#!/usr/bin/python3
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
+import math
+from sys import argv
 
-        echo "$num$num1*$num2"
-}
 
-if [ $# -ne 1 ]
-then
-        echo 'Usage: rsa <file>'
-        exit 1
-else
+def polynomial(x, n):
+    return (x**2 + 1) % n
 
-        while read i
-        do
 
-                result=$(factor "$i")
-                check_factor $result
+def pollards_rho(n):
+    x = 2
+    y = 2
+    d = 1
+    while d == 1:
+        x = int(polynomial(x, n))
+        y = int(polynomial(polynomial(y, n), n))
+        d = math.gcd(int(abs(x - y)), n)
+    if d != n:          # program is not yet completed
+        return d
 
-        done < "$1"
-fi
+
+def get_primes():
+    with open(argv[1]) as f:
+        for number in f:
+            num = int(number)
+            if num % 2 == 0:
+                print("{:d}={}*{}".format(num, num // 2, 2))
+            else:
+                prime_factor1 = pollards_rho(num)
+                prime_factor2 = int(num / prime_factor1)
+                print("{}={}*{}".format(num, prime_factor1, prime_factor2))
+
+
+if __name__ == "__main__":
+    get_primes()
